@@ -46,6 +46,26 @@ class SurveyResultsView(DetailView):
     template_name = 'polls/survey_results.html'
     context_object_name = 'survey'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        survey = self.object
+        results = []
+        for question in survey.questions.all():
+            colum = [choice.choice_text for choice in question.choice_set.all()]
+            num = [choice.votes for choice in question.choice_set.all()]
+            pairs = list(zip(colum, num))
+            # 仮の画像パス（本来はここでグラフ生成関数を呼び出し、pathを得る）
+            path = "static/polls/sample_graph.jpg"
+            results.append({
+                "question": question,
+                "colum": colum,
+                "num": num,
+                "pairs": pairs,
+                "path": path,
+            })
+        context['results'] = results
+        return context
+
 def survey_vote(request, pk):
     survey = get_object_or_404(Survey, pk=pk)
     if request.method == 'POST':
