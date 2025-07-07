@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ survey.title }}</title>
+</head>
+<body>
+    <h1>{{ survey.title }}</h1>
+    <p>{{ survey.description }}</p>
+    <h2>質問一覧</h2>
+    <form method="post" action="{% url 'polls:survey_vote' survey.pk %}">
+        {% csrf_token %}
+        <ul>
+            {% for question in survey.questions.all %}
+                <li>
+                    <strong>{{ question.question_text }}</strong>
+                    <ul>
+                        {% for choice in question.choice_set.all %}
+                            <li>
+                                <label>
+                                    <input type="radio" name="question_{{ question.id }}" value="{{ choice.pk }}">
+                                    {{ choice.choice_text }}
+                                </label>
+                            </li>
+                        {% empty %}
+                            <li>選択肢がありません。</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% empty %}
+                <li>質問がありません。</li>
+            {% endfor %}
+        </ul>
+        <button type="submit">投票</button>
+    </form>
+</body>
+</html> 

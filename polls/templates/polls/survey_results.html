@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ survey.title }} - 結果</title>
+</head>
+<body>
+    <h1>{{ survey.title }} の集計結果</h1>
+    <p>{{ survey.description }}</p>
+    <h2>質問ごとの結果</h2>
+    <ul>
+        {% for question in survey.questions.all %}
+            <li>
+                <strong>{{ question.question_text }}</strong>
+                <ul>
+                    {% for choice in question.choice_set.all %}
+                        <li>
+                            {{ choice.choice_text }}：{{ choice.votes }}票
+                        </li>
+                    {% empty %}
+                        <li>選択肢がありません。</li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% empty %}
+            <li>質問がありません。</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'polls:survey_detail' survey.pk %}">アンケートに戻る</a>
+</body>
+</html> 
