@@ -7,6 +7,8 @@ from django.http import HttpResponse
 from .models import Question, Choice, Survey
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from polls.utils.graph import plot_graph_with_path
+import os
 
 __all__ = ['DetailView', 'ResultsView', 'vote', 'SurveyDetailView', 'SurveyResultsView', 'survey_vote']
 
@@ -45,6 +47,34 @@ class SurveyResultsView(DetailView):
     model = Survey
     template_name = 'polls/survey_results.html'
     context_object_name = 'survey'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        survey = self.object
+        results = []
+        # グラフ画像保存先
+        graph_dir = os.path.join('polls', 'static', 'polls', 'graph')
+        os.makedirs(graph_dir, exist_ok=True)
+        for question in survey.questions.all():
+            colum = [choice.choice_text for choice in question.choice_set.all()]
+            num = [choice.votes for choice in question.choice_set.all()]
+            pairs = list(zip(colum, num))
+            # ファイル名例: survey1_q2.png
+            filename = f'survey{survey.id}_q{question.id}.png'
+            path = os.path.join(graph_dir, filename)
+            # グラフ画像生成
+            plot_graph_with_path(colum, num, path)
+            # Webから参照するパス
+            web_path = f'static/polls/graph/{filename}'
+            results.append({
+                "question": question,
+                "colum": colum,
+                "num": num,
+                "pairs": pairs,
+                "path": web_path,
+            })
+        context['results'] = results
+        return context
 
 def survey_vote(request, pk):
     survey = get_object_or_404(Survey, pk=pk)
