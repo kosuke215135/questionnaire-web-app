@@ -11,18 +11,17 @@
         <p class="survey-description">{{ survey.description }}</p>
         <h2>質問ごとの結果</h2>
         <ul class="question-list">
-            {% for question in survey.questions.all %}
+            {% for result in results %}
                 <li class="question-item">
-                    <strong class="question-title">{{ question.question_text }}</strong>
+                    <strong class="question-title">{{ result.question.question_text }}</strong>
                     <ul class="choice-list">
-                        {% for choice in question.choice_set.all %}
-                            <li class="choice-item">
-                                {{ choice.choice_text }}：{{ choice.votes }}票
-                            </li>
-                        {% empty %}
-                            <li class="choice-item">選択肢がありません。</li>
+                        {% for col, n in result.pairs %}
+                            <li class="choice-item">{{ col }}：{{ n }}票</li>
                         {% endfor %}
                     </ul>
+                    <div>
+                        <img src="/{{ result.path }}" alt="グラフ" style="max-width:400px;">
+                    </div>
                 </li>
             {% empty %}
                 <li class="question-item">質問がありません。</li>
