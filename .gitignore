@@ -1,4 +1,5 @@
 .cursor
+*.jpg
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,django
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,django
