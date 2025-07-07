@@ -1,29 +1,33 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>{{ survey.title }} - 結果</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 </head>
 <body>
-    <h1>{{ survey.title }} の集計結果</h1>
-    <p>{{ survey.description }}</p>
-    <h2>質問ごとの結果</h2>
-    <ul>
-        {% for result in results %}
-            <li>
-                <strong>{{ result.question.question_text }}</strong>
-                <ul>
-                    {% for col, n in result.pairs %}
-                        <li>{{ col }}：{{ n }}票</li>
-                    {% endfor %}
-                </ul>
-                <div>
-                    <img src="/{{ result.path }}" alt="グラフ" style="max-width:400px;">
-                </div>
-            </li>
-        {% empty %}
-            <li>質問がありません。</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'polls:survey_detail' survey.pk %}">アンケートに戻る</a>
+    <div class="container">
+        <h1 class="survey-title">{{ survey.title }} の集計結果</h1>
+        <p class="survey-description">{{ survey.description }}</p>
+        <h2>質問ごとの結果</h2>
+        <ul class="question-list">
+            {% for result in results %}
+                <li class="question-item">
+                    <strong class="question-title">{{ result.question.question_text }}</strong>
+                    <ul class="choice-list">
+                        {% for col, n in result.pairs %}
+                            <li class="choice-item">{{ col }}：{{ n }}票</li>
+                        {% endfor %}
+                    </ul>
+                    <div>
+                        <img src="/{{ result.path }}" alt="グラフ" style="max-width:400px;">
+                    </div>
+                </li>
+            {% empty %}
+                <li class="question-item">質問がありません。</li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'polls:survey_detail' survey.pk %}" class="back-link">アンケートに戻る</a>
+    </div>
 </body>
 </html> 
