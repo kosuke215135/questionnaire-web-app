@@ -1,16 +1,20 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <title>{{ question.question_text }} - 結果</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
 </head>
 <body>
-    <h1>{{ question.question_text }}</h1>
-    <ul>
-        {% for choice in question.choice_set.all %}
-            <li>{{ choice.choice_text }} : {{ choice.votes }}票</li>
-        {% endfor %}
-    </ul>
-    <a href="{% url 'polls:detail' question.id %}">投票ページに戻る</a>
+    <div class="container">
+        <h1 class="question-title">{{ question.question_text }}</h1>
+        <ul class="results-list">
+            {% for choice in question.choice_set.all %}
+                <li class="result-item">{{ choice.choice_text }} : {{ choice.votes }}票</li>
+            {% endfor %}
+        </ul>
+        <a href="{% url 'polls:detail' question.id %}" class="back-link">投票ページに戻る</a>
+    </div>
 </body>
 </html> 
