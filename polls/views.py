@@ -4,7 +4,7 @@ from django.views.generic.detail import DetailView as DjangoDetailView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView as GenericDetailView, ListView
 from django.http import HttpResponse
-from .models import Question, Choice, Survey
+from .models import Question, Choice, Survey, Answer, AnswerType
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from polls.utils.graph import plot_graph_with_path
@@ -56,8 +56,9 @@ class SurveyResultsView(DetailView):
         graph_dir = os.path.join('polls', 'static', 'polls', 'graph')
         os.makedirs(graph_dir, exist_ok=True)
         for question in survey.questions.all():
-            colum = [choice.choice_text for choice in question.choice_set.all()]
-            num = [choice.votes for choice in question.choice_set.all()]
+            colum = [choice.choice_text for choice in question.choices.all()]
+            # Answerモデルを使って集計
+            num = [Answer.objects.filter(question=question, choice=choice).count() for choice in question.choices.all()]
             pairs = list(zip(colum, num))
             # ファイル名例: survey1_q2.png
             filename = f'survey{survey.id}_q{question.id}.png'
@@ -79,15 +80,37 @@ class SurveyResultsView(DetailView):
 def survey_vote(request, pk):
     survey = get_object_or_404(Survey, pk=pk)
     if request.method == 'POST':
+        user = request.user if request.user.is_authenticated else None
         for question in survey.questions.all():
-            choice_id = request.POST.get(f'question_{question.id}')
-            if choice_id:
-                try:
-                    selected_choice = Choice.objects.get(pk=choice_id, question=question)
-                    selected_choice.votes += 1
-                    selected_choice.save()
-                except Choice.DoesNotExist:
-                    pass  # 不正な選択肢IDは無視
+            # 単一選択設問
+            if question.answer_type.name == 'single_choice':
+                choice_id = request.POST.get(f'question_{question.id}')
+                if choice_id:
+                    try:
+                        selected_choice = Choice.objects.get(pk=choice_id, question=question)
+                        # Answerモデルに新規保存（毎回新規で記録）
+                        Answer.objects.create(
+                            question=question,
+                            user=user,
+                            choice=selected_choice,
+                            text='',
+                        )
+                    except Choice.DoesNotExist:
+                        pass  # 不正な選択肢IDは無視
+            # 複数選択設問
+            elif question.answer_type.name == 'multiple_choice':
+                choice_ids = request.POST.getlist(f'question_{question.id}')
+                for choice_id in choice_ids:
+                    try:
+                        selected_choice = Choice.objects.get(pk=choice_id, question=question)
+                        Answer.objects.create(
+                            question=question,
+                            user=user,
+                            choice=selected_choice,
+                            text='',
+                        )
+                    except Choice.DoesNotExist:
+                        pass
         return redirect('polls:survey_results', pk=survey.pk)
     else:
         return redirect('polls:survey_detail', pk=survey.pk)
