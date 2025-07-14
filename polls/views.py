@@ -82,7 +82,7 @@ def survey_vote(request, pk):
     if request.method == 'POST':
         user = request.user if request.user.is_authenticated else None
         for question in survey.questions.all():
-            # 単一選択設問のみ対応
+            # 単一選択設問
             if question.answer_type.name == 'single_choice':
                 choice_id = request.POST.get(f'question_{question.id}')
                 if choice_id:
@@ -97,6 +97,20 @@ def survey_vote(request, pk):
                         )
                     except Choice.DoesNotExist:
                         pass  # 不正な選択肢IDは無視
+            # 複数選択設問
+            elif question.answer_type.name == 'multiple_choice':
+                choice_ids = request.POST.getlist(f'question_{question.id}')
+                for choice_id in choice_ids:
+                    try:
+                        selected_choice = Choice.objects.get(pk=choice_id, question=question)
+                        Answer.objects.create(
+                            question=question,
+                            user=user,
+                            choice=selected_choice,
+                            text='',
+                        )
+                    except Choice.DoesNotExist:
+                        pass
         return redirect('polls:survey_results', pk=survey.pk)
     else:
         return redirect('polls:survey_detail', pk=survey.pk)

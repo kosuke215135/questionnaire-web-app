@@ -63,11 +63,13 @@ h2 {
     align-items: center;
 }
 
-.choice-item input[type="radio"] {
-    accent-color: #673ab7;
-    width: 18px;
-    height: 18px;
-    margin-right: 12px;
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: #673ab7; /* Googleフォーム風の紫色 */
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 
 .vote-form, .survey-form {

@@ -28,6 +28,17 @@
                                 {% empty %}
                                     <li class="choice-item">選択肢がありません。</li>
                                 {% endfor %}
+                            {% elif question.answer_type.name == 'multiple_choice' %}
+                                {% for choice in question.choices.all %}
+                                    <li class="choice-item">
+                                        <label>
+                                            <input type="checkbox" name="question_{{ question.id }}" value="{{ choice.pk }}">
+                                            {{ choice.choice_text }}
+                                        </label>
+                                    </li>
+                                {% empty %}
+                                    <li class="choice-item">選択肢がありません。</li>
+                                {% endfor %}
                             {% else %}
                                 <li class="choice-item">この設問タイプには未対応です。</li>
                             {% endif %}

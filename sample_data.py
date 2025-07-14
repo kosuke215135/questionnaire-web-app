@@ -104,13 +104,25 @@ for text in [
 ]:
     Choice.objects.create(question=q5, choice_text=text, votes=0)
 
-# 6つ目の質問（記述式・任意回答の例）
-q6 = Question.objects.create(
+# 7つ目の質問（複数選択・multiple_choiceの例）
+q7 = Question.objects.create(
     survey=survey,
-    question_text="AI技術に関して自由にご意見・ご要望があればご記入ください。",
+    question_text="AI技術に期待する分野をすべて選んでください（複数選択可）",
     pub_date=timezone.now(),
-    answer_type=text_type,
+    answer_type=multiple_choice,
     is_required=False
 )
+for text in [
+    "医療",
+    "教育",
+    "交通・物流",
+    "製造業",
+    "農業",
+    "金融",
+    "エンターテインメント",
+    "その他"
+]:
+    Choice.objects.create(question=q7, choice_text=text, votes=0)
+
 
 print("AIの透明性・説明可能性・軽量化に関するサンプルデータの投入が完了しました。") 
