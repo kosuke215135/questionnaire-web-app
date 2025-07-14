@@ -124,5 +124,14 @@ for text in [
 ]:
     Choice.objects.create(question=q7, choice_text=text, votes=0)
 
+# 8つ目の質問（記述式・textの例）
+q8 = Question.objects.create(
+    survey=survey,
+    question_text="AI技術に関して自由にご意見・ご要望があればご記入ください。",
+    pub_date=timezone.now(),
+    answer_type=text_type,
+    is_required=False
+)
+
 
 print("AIの透明性・説明可能性・軽量化に関するサンプルデータの投入が完了しました。") 

@@ -15,13 +15,27 @@
                 <li class="question-item">
                     <strong class="question-title">{{ result.question.question_text }}</strong>
                     <ul class="choice-list">
-                        {% for col, n in result.pairs %}
-                            <li class="choice-item">{{ col }}：{{ n }}票</li>
-                        {% endfor %}
+                        {% if result.question.answer_type.name == 'text' %}
+                            <li class="answer-list-label">回答一覧</li>
+                            {% for answer in result.question.answers.all %}
+                                <li class="answer-item-googleform">
+                                    <span class="answer-label">回答：</span>
+                                    <span class="answer-content">{{ answer.text|default:'（無回答）' }}</span>
+                                </li>
+                            {% empty %}
+                                <li class="answer-item-googleform">回答がありません。</li>
+                            {% endfor %}
+                        {% else %}
+                            {% for col, n in result.pairs %}
+                                <li class="choice-item">{{ col }}：{{ n }}票</li>
+                            {% endfor %}
+                        {% endif %}
                     </ul>
+                    {% if result.question.answer_type.name != 'text' %}
                     <div>
                         <img src="/{{ result.path }}" alt="グラフ" style="max-width:400px;">
                     </div>
+                    {% endif %}
                 </li>
             {% empty %}
                 <li class="question-item">質問がありません。</li>
