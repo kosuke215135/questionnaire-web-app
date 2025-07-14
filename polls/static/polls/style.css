@@ -124,6 +124,68 @@ input[type="radio"] {
     text-decoration: underline;
 }
 
+/* Googleフォーム風 記述式テキストエリア */
+.googleform-textarea {
+    width: 100%;
+    min-height: 60px;
+    border: 2px solid #dadce0;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 16px;
+    background: #f8f9fa;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+.googleform-textarea:focus {
+    border-color: #673ab7;
+    outline: none;
+    background: #fff;
+}
+
+/* Googleフォーム風 記述式回答リスト */
+.answer-list-label {
+    font-weight: bold;
+    color: #673ab7;
+    margin-bottom: 4px;
+    margin-top: 8px;
+    font-size: 1.1em;
+    text-align: center;
+}
+.answer-item-googleform {
+    background: #f3e8fd;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin: 8px auto;
+    border-left: 4px solid #673ab7;
+    font-size: 1em;
+    display: flex;
+    align-items: flex-start;
+    width: 90%;
+    box-sizing: border-box;
+}
+.answer-label {
+    font-weight: bold;
+    color: #673ab7;
+    margin-right: 8px;
+}
+.answer-content {
+    word-break: break-all;
+}
+
+/* 記述式回答リストをスクロール表示 */
+.answer-scroll-box {
+    max-height: 220px;
+    /* 横幅指定を外すことで親要素の幅に合わせる */
+    margin: 0 auto 12px auto;
+    overflow-y: auto;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    background: #faf7fd;
+    padding: 8px 0;
+}
+
 @media (max-width: 700px) {
     .container {
         max-width: 99vw;

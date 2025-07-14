@@ -111,6 +111,16 @@ def survey_vote(request, pk):
                         )
                     except Choice.DoesNotExist:
                         pass
+            # 記述式設問
+            elif question.answer_type.name == 'text':
+                text_value = request.POST.get(f'question_{question.id}', '').strip()
+                if text_value:
+                    Answer.objects.create(
+                        question=question,
+                        user=user,
+                        choice=None,
+                        text=text_value,
+                    )
         return redirect('polls:survey_results', pk=survey.pk)
     else:
         return redirect('polls:survey_detail', pk=survey.pk)

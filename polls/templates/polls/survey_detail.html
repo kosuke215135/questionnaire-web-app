@@ -39,6 +39,10 @@
                                 {% empty %}
                                     <li class="choice-item">選択肢がありません。</li>
                                 {% endfor %}
+                            {% elif question.answer_type.name == 'text' %}
+                                <li class="choice-item">
+                                    <textarea name="question_{{ question.id }}" rows="3" cols="40" placeholder="ご自由にご記入ください" class="googleform-textarea"></textarea>
+                                </li>
                             {% else %}
                                 <li class="choice-item">この設問タイプには未対応です。</li>
                             {% endif %}
