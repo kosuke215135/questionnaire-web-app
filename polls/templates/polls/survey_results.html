@@ -14,9 +14,9 @@
             {% for result in results %}
                 <li class="question-item">
                     <strong class="question-title">{{ result.question.question_text }}</strong>
-                    <ul class="choice-list">
-                        {% if result.question.answer_type.name == 'text' %}
-                            <li class="answer-list-label">回答一覧</li>
+                    {% if result.question.answer_type.name == 'text' %}
+                        <div class="answer-list-label">回答一覧</div>
+                        <ul class="choice-list answer-scroll-box">
                             {% for answer in result.question.answers.all %}
                                 <li class="answer-item-googleform">
                                     <span class="answer-label">回答：</span>
@@ -25,12 +25,14 @@
                             {% empty %}
                                 <li class="answer-item-googleform">回答がありません。</li>
                             {% endfor %}
-                        {% else %}
+                        </ul>
+                    {% else %}
+                        <ul class="choice-list">
                             {% for col, n in result.pairs %}
                                 <li class="choice-item">{{ col }}：{{ n }}票</li>
                             {% endfor %}
-                        {% endif %}
-                    </ul>
+                        </ul>
+                    {% endif %}
                     {% if result.question.answer_type.name != 'text' %}
                     <div>
                         <img src="/{{ result.path }}" alt="グラフ" style="max-width:400px;">
