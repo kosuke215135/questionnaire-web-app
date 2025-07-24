@@ -20,7 +20,7 @@
         const choicesList = btn.parentElement.querySelector('.choices-list');
         const count = choicesList.children.length + 1;
         const li = document.createElement('li');
-        li.innerHTML = `<textarea class="googleform-textarea" name="choice_text" placeholder="選択肢${count}"></textarea> <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>`;
+        li.innerHTML = `<input type="text" class="googleform-textarea choice-input" name="choice_text" placeholder="選択肢${count}" style="margin:0 8px 0 0; min-height:40px;"> <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>`;
         choicesList.appendChild(li);
     }
     // 選択肢削除
