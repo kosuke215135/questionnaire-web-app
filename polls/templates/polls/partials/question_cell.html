@@ -1,9 +1,9 @@
-<div class="card question-cell">
+<div class="card question-cell" data-unique-id="{{ unique_id }}">
     <div class="question-cell-header" style="display: flex; align-items: center; gap: 18px; margin-bottom: 8px;">
         <span class="question-label">設問タイプ：</span>
-        <label style="margin-right: 8px;"><input type="radio" name="question_type" value="single" checked onchange="toggleChoicesArea(this)"> 単一選択</label>
-        <label style="margin-right: 8px;"><input type="radio" name="question_type" value="multiple" onchange="toggleChoicesArea(this)"> 複数選択</label>
-        <label style="margin-right: 16px;"><input type="radio" name="question_type" value="text" onchange="toggleChoicesArea(this)"> 記述式</label>
+        <label style="margin-right: 8px;"><input type="radio" name="question_type_{{ unique_id }}" value="single" checked onchange="toggleChoicesArea(this)"> 単一選択</label>
+        <label style="margin-right: 8px;"><input type="radio" name="question_type_{{ unique_id }}" value="multiple" onchange="toggleChoicesArea(this)"> 複数選択</label>
+        <label style="margin-right: 16px;"><input type="radio" name="question_type_{{ unique_id }}" value="text" onchange="toggleChoicesArea(this)"> 記述式</label>
         <label class="required-label" style="display:flex; align-items:center; margin-left:auto;">
             <input type="checkbox" name="is_required" style="margin-right:4px;"> 必須
         </label>
@@ -13,19 +13,18 @@
         <ul class="choices-list">
             <li style="display: flex; align-items: center;">
                 <input type="radio" disabled style="margin-right:8px;">
-                <input type="text" class="googleform-textarea choice-input" name="choice_text" placeholder="選択肢1" style="margin:0 8px 0 0; min-height:40px;">
+                <input type="text" class="googleform-textarea choice-input" name="choice_text_{{ unique_id }}" placeholder="選択肢1" style="margin:0 8px 0 0; min-height:40px;">
                 <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>
             </li>
             <li style="display: flex; align-items: center;">
                 <input type="radio" disabled style="margin-right:8px;">
-                <input type="text" class="googleform-textarea choice-input" name="choice_text" placeholder="選択肢2" style="margin:0 8px 0 0; min-height:40px;">
+                <input type="text" class="googleform-textarea choice-input" name="choice_text_{{ unique_id }}" placeholder="選択肢2" style="margin:0 8px 0 0; min-height:40px;">
                 <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>
             </li>
         </ul>
         <button type="button" class="btn add-choice-btn" onclick="addChoice(this)">＋選択肢を追加</button>
     </div>
     <div class="question-cell-footer" style="display: flex; align-items: center; justify-content: flex-end; margin-top: 8px; gap: 8px;">
-        <button type="button" class="btn btn-light" onclick="copyQuestion(this)">コピー</button>
         <button type="button" class="btn btn-danger" onclick="this.closest('.question-cell').remove()">削除</button>
     </div>
 </div> 

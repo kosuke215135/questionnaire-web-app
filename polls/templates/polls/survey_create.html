@@ -19,8 +19,22 @@
     function addChoice(btn) {
         const choicesList = btn.parentElement.querySelector('.choices-list');
         const count = choicesList.children.length + 1;
+        const cell = btn.closest('.question-cell');
+        // unique_idをdata属性から取得
+        let unique_id = cell.getAttribute('data-unique-id');
+        if (!unique_id) {
+            // なければHTMLから推測
+            const nameInput = cell.querySelector('input[name^="choice_text_"]');
+            if (nameInput) {
+                const match = nameInput.name.match(/^choice_text_(.+)$/);
+                if (match) unique_id = match[1];
+            }
+        }
         const li = document.createElement('li');
-        li.innerHTML = `<input type="text" class="googleform-textarea choice-input" name="choice_text" placeholder="選択肢${count}" style="margin:0 8px 0 0; min-height:40px;"> <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>`;
+        li.setAttribute('style', 'display: flex; align-items: center;');
+        li.innerHTML = `<input type="radio" disabled style="margin-right:8px;">
+            <input type="text" class="googleform-textarea choice-input" name="choice_text_${unique_id}" placeholder="選択肢${count}" style="margin:0 8px 0 0; min-height:40px;">
+            <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>`;
         choicesList.appendChild(li);
     }
     // 選択肢削除
@@ -39,6 +53,53 @@
         document.querySelectorAll('.question-cell select[name="question_type"]').forEach(function(sel) {
             toggleChoicesArea(sel);
         });
+        // フォーム送信前に設問タイプと選択肢と質問文をhidden inputでまとめる
+        const form = document.getElementById('survey-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                // 設問タイプhidden inputをクリア
+                form.querySelectorAll('input[name="question_type"]').forEach(el => el.remove());
+                // 選択肢hidden inputをクリア
+                form.querySelectorAll('input[name="choices"]').forEach(el => el.remove());
+                // 質問文hidden inputをクリア
+                form.querySelectorAll('input[name="question_text"]').forEach(el => el.remove());
+                // 設問ごとに設問タイプ・選択肢・質問文をhidden inputで追加
+                const allChoices = [];
+                document.querySelectorAll('.question-cell').forEach(cell => {
+                    // 設問タイプ
+                    const typeRadio = cell.querySelector('input[type="radio"][name^="question_type_":checked');
+                    if (typeRadio) {
+                        const hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'question_type';
+                        hidden.value = typeRadio.value;
+                        form.appendChild(hidden);
+                    }
+                    // 質問文
+                    const textarea = cell.querySelector('textarea[name="question_text"]');
+                    if (textarea) {
+                        const hiddenQ = document.createElement('input');
+                        hiddenQ.type = 'hidden';
+                        hiddenQ.name = 'question_text';
+                        hiddenQ.value = textarea.value;
+                        form.appendChild(hiddenQ);
+                    }
+                    // 選択肢
+                    let unique_id = cell.getAttribute('data-unique-id');
+                    const choices = [];
+                    cell.querySelectorAll(`input[name="choice_text_${unique_id}"]`).forEach(input => {
+                        if (input.value.trim()) choices.push(input.value.trim());
+                    });
+                    allChoices.push(choices);
+                });
+                // 全設問分の選択肢をJSONでhidden inputに
+                const choicesHidden = document.createElement('input');
+                choicesHidden.type = 'hidden';
+                choicesHidden.name = 'choices';
+                choicesHidden.value = JSON.stringify(allChoices);
+                form.appendChild(choicesHidden);
+            });
+        }
     });
     // HTMXで設問セル追加時にも初期化
     document.body.addEventListener('htmx:afterSwap', function(evt) {
@@ -64,8 +125,8 @@
         <button type="button" class="btn add-question-btn" 
             hx-get="{% url 'polls:question_cell' %}" 
             hx-target="#questions-area" 
-            hx-swap="afterend">
-            ＋設問を追加
+            hx-swap="beforeend">
+            ＋質問を追加
         </button>
         <br><br>
         <button type="submit" class="btn">アンケートを保存</button>
