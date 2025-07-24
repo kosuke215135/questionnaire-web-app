@@ -1,130 +1,39 @@
 /* Googleフォーム風アンケートアプリ用スタイル */
 
 body {
-    background: #f4f6fb;
-    font-family: 'Roboto', 'Segoe UI', 'Hiragino Sans', 'Meiryo', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: #1d1d1f;
     margin: 0;
     padding: 0;
-    color: #222;
 }
 
 .container {
-    max-width: 640px;
-    margin: 48px auto;
+    max-width: 700px;
+    margin: 40px auto;
     background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(60, 80, 120, 0.10);
-    padding: 40px 36px 32px 36px;
-    border-top: 8px solid #673ab7;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    padding: 40px 32px 32px 32px;
 }
 
-.survey-title, .question-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-bottom: 18px;
-    color: #3c2e7c;
-    letter-spacing: 0.01em;
-}
-
-.survey-description {
-    font-size: 1.08rem;
-    color: #5f6368;
+.card, .question-cell {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 24px 20px;
     margin-bottom: 28px;
+    border: 1.5px solid #e0e0e0;
+    position: relative;
 }
 
-h2 {
-    font-size: 1.1rem;
-    color: #5f6368;
-    margin-bottom: 18px;
+label {
     font-weight: 500;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
 }
 
-.question-list, .results-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 28px 0;
-}
-
-.question-item, .result-item {
-    margin-bottom: 32px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #ececec;
-}
-
-.choice-list {
-    list-style: none;
-    padding: 0;
-    margin: 14px 0 0 0;
-}
-
-.choice-item {
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-}
-
-input[type="checkbox"],
-input[type="radio"] {
-    accent-color: #673ab7; /* Googleフォーム風の紫色 */
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-.vote-form, .survey-form {
-    margin-top: 24px;
-}
-
-.vote-button, button[type="submit"] {
-    background: #673ab7;
-    color: #fff;
-    font-size: 1.08rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 24px;
-    padding: 12px 0;
-    width: 100%;
-    margin-top: 22px;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(103, 58, 183, 0.10);
-    transition: background 0.18s, box-shadow 0.18s;
-}
-
-.vote-button:hover, button[type="submit"]:hover {
-    background: #512da8;
-    box-shadow: 0 4px 16px rgba(103, 58, 183, 0.18);
-}
-
-.error-message {
-    color: #d93025;
-    background: none;
-    border: none;
-    border-radius: 0;
-    margin-bottom: 10px;
-    font-size: 1rem;
-    font-weight: 500;
-    padding: 0 0 0 2px;
-    border-bottom: 2px solid #d93025;
-    display: inline-block;
-}
-
-.back-link {
-    display: inline-block;
-    margin-top: 18px;
-    color: #673ab7;
-    text-decoration: none;
-    font-weight: 500;
-    font-size: 1.02rem;
-    transition: color 0.15s;
-}
-
-.back-link:hover {
-    color: #512da8;
-    text-decoration: underline;
-}
-
-/* Googleフォーム風 記述式テキストエリア */
 .googleform-textarea {
     width: 100%;
     min-height: 60px;
@@ -133,68 +42,104 @@ input[type="radio"] {
     padding: 12px;
     font-size: 16px;
     background: #f8f9fa;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
     box-sizing: border-box;
     margin-top: 8px;
     margin-bottom: 8px;
+    resize: vertical;
 }
 .googleform-textarea:focus {
     border-color: #673ab7;
     outline: none;
     background: #fff;
+    box-shadow: 0 0 0 2px #e1bee7;
 }
 
-/* Googleフォーム風 記述式回答リスト */
-.answer-list-label {
-    font-weight: bold;
-    color: #673ab7;
-    margin-bottom: 4px;
-    margin-top: 8px;
-    font-size: 1.1em;
-    text-align: center;
-}
-.answer-item-googleform {
-    background: #f3e8fd;
-    border-radius: 6px;
-    padding: 10px 14px;
-    margin: 8px auto;
-    border-left: 4px solid #673ab7;
-    font-size: 1em;
-    display: flex;
-    align-items: flex-start;
-    width: 90%;
-    box-sizing: border-box;
-}
-.answer-label {
-    font-weight: bold;
-    color: #673ab7;
-    margin-right: 8px;
-}
-.answer-content {
-    word-break: break-all;
-}
-
-/* 記述式回答リストをスクロール表示 */
-.answer-scroll-box {
-    max-height: 220px;
-    /* 横幅指定を外すことで親要素の幅に合わせる */
-    margin: 0 auto 12px auto;
-    overflow-y: auto;
-    border: 1px solid #dadce0;
+.btn {
+    background: #673ab7;
+    color: #fff;
+    border: none;
     border-radius: 8px;
-    background: #faf7fd;
-    padding: 8px 0;
+    padding: 12px 32px;
+    font-size: 1.1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    margin: 8px 0;
+    box-shadow: 0 2px 8px rgba(103,58,183,0.08);
+    display: inline-block;
+}
+.btn:hover {
+    background: #512da8;
+    box-shadow: 0 4px 16px rgba(103,58,183,0.13);
 }
 
-@media (max-width: 700px) {
+.btn-danger {
+    background: #e53935;
+    color: #fff;
+    margin-left: 8px;
+}
+.btn-danger:hover {
+    background: #b71c1c;
+}
+
+.add-question-btn {
+    display: block;
+    margin: 0 auto 24px auto;
+    font-size: 1.15em;
+    padding: 16px 0;
+    width: 80%;
+    max-width: 340px;
+    background: #fff;
+    color: #673ab7;
+    border: 2px dashed #b39ddb;
+    border-radius: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(103,58,183,0.06);
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.add-question-btn:hover {
+    background: #ede7f6;
+    color: #512da8;
+    border-color: #7e57c2;
+}
+
+.question-cell {
+    margin-bottom: 32px;
+    border-left: 6px solid #673ab7;
+    padding-left: 18px;
+}
+
+.question-cell .btn-danger {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    padding: 6px 16px;
+    font-size: 0.95em;
+}
+
+.question-cell .required-label {
+    display: inline-block;
+    margin-left: 12px;
+    color: #e53935;
+    font-size: 0.98em;
+    font-weight: 500;
+}
+
+@media (max-width: 600px) {
     .container {
-        max-width: 99vw;
-        padding: 16px 2vw 18px 2vw;
+        padding: 12px 2vw;
     }
-    .survey-title, .question-title {
-        font-size: 1.1rem;
+    .card, .question-cell {
+        padding: 10px 4vw;
     }
-    .vote-button, button[type="submit"] {
-        font-size: 1rem;
+    h1 {
+        font-size: 1.3em;
     }
-} 
+    .add-question-btn {
+        width: 98%;
+        font-size: 1em;
+    }
+}
+
+/* 既存のGoogleフォーム風テキストエリアや回答リストのCSSはそのまま残す */

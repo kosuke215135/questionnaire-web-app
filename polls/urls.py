@@ -11,4 +11,6 @@ urlpatterns = [
     path('survey/<int:pk>/', SurveyDetailView.as_view(), name='survey_detail'),
     path('survey/<int:pk>/results/', SurveyResultsView.as_view(), name='survey_results'),
     path('survey/<int:pk>/vote/', survey_vote, name='survey_vote'),
+    path('survey/create/', views.survey_create, name='survey_create'),
+    path('survey/question_cell/', views.question_cell, name='question_cell'),
 ] 

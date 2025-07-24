@@ -4,11 +4,13 @@ from django.views.generic.detail import DetailView as DjangoDetailView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView as GenericDetailView, ListView
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 from .models import Question, Choice, Survey, Answer, AnswerType
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from polls.utils.graph import plot_graph_with_path
 import os
+from django.utils import timezone
 
 __all__ = ['DetailView', 'ResultsView', 'vote', 'SurveyDetailView', 'SurveyResultsView', 'survey_vote']
 
@@ -124,3 +126,47 @@ def survey_vote(request, pk):
         return redirect('polls:survey_results', pk=survey.pk)
     else:
         return redirect('polls:survey_detail', pk=survey.pk)
+
+def question_cell(request):
+    html = render_to_string('polls/partials/question_cell.html', {})
+    return HttpResponse(html)
+
+def survey_create(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        # Survey作成
+        survey = Survey.objects.create(title=title, description=description, pub_date=timezone.now())
+        # 設問セルをパース
+        question_texts = request.POST.getlist('question_text')
+        question_types = request.POST.getlist('question_type')
+        is_requireds = request.POST.getlist('is_required')
+        # 選択肢は設問ごとにまとめて取得
+        all_choices = request.POST.getlist('choice_text')
+        choice_idx = 0
+        for i, (q_text, q_type) in enumerate(zip(question_texts, question_types)):
+            answer_type = AnswerType.objects.get(name=q_type if q_type != 'text' else 'text')
+            is_required = str(i) in is_requireds or True  # 必須チェック（暫定）
+            question = Question.objects.create(
+                survey=survey,
+                question_text=q_text,
+                answer_type=answer_type,
+                is_required=is_required,
+                pub_date=timezone.now()
+            )
+            if q_type in ['single', 'multiple']:
+                # 選択肢を2つ以上取得（空欄は除外）
+                for _ in range(2):  # 最低2つは必ずある
+                    if choice_idx < len(all_choices):
+                        c_text = all_choices[choice_idx].strip()
+                        if c_text:
+                            Choice.objects.create(question=question, choice_text=c_text)
+                        choice_idx += 1
+                # 追加分
+                while choice_idx < len(all_choices):
+                    c_text = all_choices[choice_idx].strip()
+                    if c_text:
+                        Choice.objects.create(question=question, choice_text=c_text)
+                    choice_idx += 1
+        return redirect(reverse('polls:survey_detail', args=[survey.id]))
+    return render(request, 'polls/survey_create.html')

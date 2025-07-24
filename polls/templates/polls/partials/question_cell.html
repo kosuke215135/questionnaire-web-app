@@ -1,0 +1,28 @@
+<div class="card question-cell">
+    <label>設問文<br><textarea class="googleform-textarea" name="question_text" required></textarea></label>
+    <label>設問タイプ<br>
+        <select name="question_type" onchange="toggleChoicesArea(this)">
+            <option value="single">単一選択</option>
+            <option value="multiple">複数選択</option>
+            <option value="text">自由記述</option>
+        </select>
+    </label>
+    <label class="required-label">
+        <input type="checkbox" name="is_required"> 必須
+    </label>
+    <div class="choices-area">
+        <label>選択肢（必要な場合のみ）<br></label>
+        <ul class="choices-list">
+            <li>
+                <textarea class="googleform-textarea" name="choice_text" placeholder="選択肢1"></textarea>
+                <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>
+            </li>
+            <li>
+                <textarea class="googleform-textarea" name="choice_text" placeholder="選択肢2"></textarea>
+                <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>
+            </li>
+        </ul>
+        <button type="button" class="btn add-choice-btn" onclick="addChoice(this)">＋選択肢を追加</button>
+    </div>
+    <button type="button" class="btn btn-danger" onclick="this.parentElement.remove()">× 削除</button>
+</div> 

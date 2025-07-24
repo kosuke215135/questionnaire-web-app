@@ -12,6 +12,11 @@ single_choice, _ = AnswerType.objects.get_or_create(name='single_choice')
 multiple_choice, _ = AnswerType.objects.get_or_create(name='multiple_choice')
 text_type, _ = AnswerType.objects.get_or_create(name='text')
 
+# AnswerTypeの初期データ投入
+AnswerType.objects.get_or_create(name='single')
+AnswerType.objects.get_or_create(name='multiple')
+AnswerType.objects.get_or_create(name='text')
+
 # サーベイ（アンケート）を作成
 survey = Survey.objects.create(
     title="AIの透明性・説明可能性・軽量化に関するアンケート",

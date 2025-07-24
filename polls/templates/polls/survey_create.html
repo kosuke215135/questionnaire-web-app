@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>アンケート作成</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="/static/polls/style.css">
+    <script>
+    function toggleChoicesArea(selectElem) {
+        const cell = selectElem.closest('.question-cell');
+        const choicesArea = cell.querySelector('.choices-area');
+        if (selectElem.value === 'text') {
+            choicesArea.style.display = 'none';
+        } else {
+            choicesArea.style.display = '';
+        }
+    }
+    // 選択肢追加
+    function addChoice(btn) {
+        const choicesList = btn.parentElement.querySelector('.choices-list');
+        const count = choicesList.children.length + 1;
+        const li = document.createElement('li');
+        li.innerHTML = `<textarea class="googleform-textarea" name="choice_text" placeholder="選択肢${count}"></textarea> <button type="button" class="btn btn-danger choice-remove-btn" onclick="removeChoice(this)">×</button>`;
+        choicesList.appendChild(li);
+    }
+    // 選択肢削除
+    function removeChoice(btn) {
+        const li = btn.closest('li');
+        const ul = li.parentElement;
+        ul.removeChild(li);
+        // プレースホルダー番号を振り直す
+        Array.from(ul.children).forEach((li, idx) => {
+            const textarea = li.querySelector('textarea');
+            if (textarea) textarea.placeholder = `選択肢${idx+1}`;
+        });
+    }
+    // ページロード時、すべての設問セルの初期状態を正しくする
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.question-cell select[name="question_type"]').forEach(function(sel) {
+            toggleChoicesArea(sel);
+        });
+    });
+    // HTMXで設問セル追加時にも初期化
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.target && evt.target.classList.contains('question-cell')) {
+            const sel = evt.target.querySelector('select[name="question_type"]');
+            if (sel) toggleChoicesArea(sel);
+        }
+    });
+    </script>
+</head>
+<body>
+<div class="container">
+    <h1>アンケート作成</h1>
+    <form id="survey-form" method="post">
+        {% csrf_token %}
+        <div class="card">
+            <label>タイトル<br><textarea class="googleform-textarea" name="title" required></textarea></label><br>
+            <label>説明<br><textarea class="googleform-textarea" name="description" rows="2"></textarea></label>
+        </div>
+        <div id="questions-area">
+            <!-- 設問セルがここに挿入される -->
+        </div>
+        <button type="button" class="btn add-question-btn" 
+            hx-get="{% url 'polls:question_cell' %}" 
+            hx-target="#questions-area" 
+            hx-swap="afterend">
+            ＋設問を追加
+        </button>
+        <br><br>
+        <button type="submit" class="btn">アンケートを保存</button>
+    </form>
+</div>
+</body>
+</html> 
