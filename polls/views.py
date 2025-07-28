@@ -4,11 +4,16 @@ from django.views.generic.detail import DetailView as DjangoDetailView
 from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView as GenericDetailView, ListView
 from django.http import HttpResponse
+from django.template.loader import render_to_string
 from .models import Question, Choice, Survey, Answer, AnswerType
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from polls.utils.graph import plot_graph_with_path
 import os
+from django.utils import timezone
+import uuid
+import json
+import re
 
 __all__ = ['DetailView', 'ResultsView', 'vote', 'SurveyDetailView', 'SurveyResultsView', 'survey_vote']
 
@@ -124,3 +129,51 @@ def survey_vote(request, pk):
         return redirect('polls:survey_results', pk=survey.pk)
     else:
         return redirect('polls:survey_detail', pk=survey.pk)
+
+def question_cell(request):
+    unique_id = uuid.uuid4().hex
+    html = render_to_string('polls/partials/question_cell.html', {'unique_id': unique_id})
+    return HttpResponse(html)
+
+def survey_create(request):
+    if request.method == 'POST':
+        title = request.POST.get('title', '').strip()
+        description = request.POST.get('description', '').strip()
+        survey = Survey.objects.create(title=title, description=description, pub_date=timezone.now())
+        question_texts = request.POST.getlist('question_text')
+        # ユニークIDを抽出
+        question_ids = []
+        for key in request.POST.keys():
+            m = re.match(r'question_type_(.+)', key)
+            if m:
+                question_ids.append(m.group(1))
+        question_types = []
+        choices_per_question = []
+        for qid in question_ids:
+            question_types.append(request.POST.get(f'question_type_{qid}'))
+            choices_per_question.append(request.POST.getlist(f'choice_text_{qid}'))
+        is_requireds = request.POST.getlist('is_required')
+        type_map = {
+            'single': 'single_choice',
+            'multiple': 'multiple_choice',
+            'text': 'text'
+        }
+        for i, (q_text, q_type) in enumerate(zip(question_texts, question_types)):
+            answer_type_name = type_map.get(q_type, 'single_choice')
+            answer_type = AnswerType.objects.get(name=answer_type_name)
+            is_required = str(i) in is_requireds or True  # 必須チェック（暫定）
+            question = Question.objects.create(
+                survey=survey,
+                question_text=q_text,
+                answer_type=answer_type,
+                is_required=is_required,
+                pub_date=timezone.now()
+            )
+            # 選択肢を保存
+            if q_type in ['single', 'multiple']:
+                if i < len(choices_per_question):
+                    for c_text in choices_per_question[i]:
+                        if c_text:
+                            Choice.objects.create(question=question, choice_text=c_text)
+        return redirect(reverse('polls:survey_detail', args=[survey.id]))
+    return render(request, 'polls/survey_create.html')
