@@ -5,7 +5,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView as GenericDetailView, ListView
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from .models import Question, Choice, Survey, Answer, AnswerType
+from .models import Question, Choice, Survey, Answer, AnswerType, UserProfile
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from polls.utils.graph import plot_graph_with_path
@@ -14,6 +14,16 @@ from django.utils import timezone
 import uuid
 import json
 import re
+
+# 認証関連のインポート
+from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.views.generic.edit import CreateView, UpdateView
+from django.contrib.auth.models import User
+from django import forms
 
 __all__ = ['DetailView', 'ResultsView', 'vote', 'SurveyDetailView', 'SurveyResultsView', 'survey_vote']
 
@@ -48,7 +58,7 @@ class SurveyDetailView(DetailView):
     template_name = 'polls/survey_detail.html'
     context_object_name = 'survey'
 
-class SurveyResultsView(DetailView):
+class SurveyResultsView(LoginRequiredMixin, DetailView):
     model = Survey
     template_name = 'polls/survey_results.html'
     context_object_name = 'survey'
@@ -80,6 +90,94 @@ class SurveyResultsView(DetailView):
                 "path": web_path,
             })
         context['results'] = results
+        return context
+
+class SurveyReviewView(DetailView):
+    """投票内容の振り返りビュー"""
+    model = Survey
+    template_name = 'polls/survey_review.html'
+    context_object_name = 'survey'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        survey = self.object
+        user_answers = []
+        
+        # ユーザーの最新の回答を取得
+        for question in survey.questions.all():
+            if question.answer_type.name == 'single_choice':
+                # 単一選択の場合 - 最新の回答のみ
+                latest_answer = Answer.objects.filter(
+                    question=question,
+                    user=self.request.user if self.request.user.is_authenticated else None
+                ).order_by('-submitted_at').first()
+                
+                if latest_answer and latest_answer.choice:
+                    user_answers.append({
+                        'question': question,
+                        'answers': [latest_answer.choice.choice_text],
+                        'type': 'choice'
+                    })
+                else:
+                    user_answers.append({
+                        'question': question,
+                        'answers': [],
+                        'type': 'choice'
+                    })
+            elif question.answer_type.name == 'multiple_choice':
+                # 複数選択の場合 - 最新の投票セッション内のすべての選択肢
+                # 最新の回答時刻を取得（1秒以内の誤差を許容）
+                latest_answers = Answer.objects.filter(
+                    question=question,
+                    user=self.request.user if self.request.user.is_authenticated else None
+                ).order_by('-submitted_at')
+                
+                if latest_answers.exists():
+                    latest_time = latest_answers.first().submitted_at
+                    # 最新時刻から1秒以内の回答をすべて取得
+                    from datetime import timedelta
+                    recent_answers = Answer.objects.filter(
+                        question=question,
+                        user=self.request.user if self.request.user.is_authenticated else None,
+                        submitted_at__gte=latest_time - timedelta(seconds=1),
+                        submitted_at__lte=latest_time + timedelta(seconds=1)
+                    ).select_related('choice')
+                    
+                    choices = [answer.choice.choice_text for answer in recent_answers if answer.choice]
+                    # 重複を除去してユニークな選択肢のみを表示
+                    unique_choices = list(dict.fromkeys(choices))
+                    user_answers.append({
+                        'question': question,
+                        'answers': unique_choices,
+                        'type': 'choice'
+                    })
+                else:
+                    user_answers.append({
+                        'question': question,
+                        'answers': [],
+                        'type': 'choice'
+                    })
+            elif question.answer_type.name == 'text':
+                # 記述式の場合 - 最新の回答のみ
+                latest_answer = Answer.objects.filter(
+                    question=question,
+                    user=self.request.user if self.request.user.is_authenticated else None
+                ).order_by('-submitted_at').first()
+                
+                if latest_answer and latest_answer.text.strip():
+                    user_answers.append({
+                        'question': question,
+                        'answers': [latest_answer.text.strip()],
+                        'type': 'text'
+                    })
+                else:
+                    user_answers.append({
+                        'question': question,
+                        'answers': [],
+                        'type': 'text'
+                    })
+        
+        context['user_answers'] = user_answers
         return context
 
 def survey_vote(request, pk):
@@ -126,7 +224,7 @@ def survey_vote(request, pk):
                         choice=None,
                         text=text_value,
                     )
-        return redirect('polls:survey_results', pk=survey.pk)
+        return redirect('polls:survey_review', pk=survey.pk)
     else:
         return redirect('polls:survey_detail', pk=survey.pk)
 
@@ -139,7 +237,12 @@ def survey_create(request):
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         description = request.POST.get('description', '').strip()
-        survey = Survey.objects.create(title=title, description=description, pub_date=timezone.now())
+        survey = Survey.objects.create(
+            title=title, 
+            description=description, 
+            pub_date=timezone.now(),
+            created_by=request.user if request.user.is_authenticated else None
+        )
         question_texts = request.POST.getlist('question_text')
         # ユニークIDを抽出
         question_ids = []
@@ -175,5 +278,105 @@ def survey_create(request):
                     for c_text in choices_per_question[i]:
                         if c_text:
                             Choice.objects.create(question=question, choice_text=c_text)
-        return redirect(reverse('polls:survey_detail', args=[survey.id]))
+        return redirect('polls:survey_list')
     return render(request, 'polls/survey_create.html')
+
+# 認証関連のフォーム
+class CustomUserCreationForm(UserCreationForm):
+    """カスタムユーザー登録フォーム"""
+    email = forms.EmailField(required=True, help_text='必須項目です')
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2')
+
+class UserProfileForm(forms.ModelForm):
+    """ユーザープロフィール編集フォーム"""
+    class Meta:
+        model = UserProfile
+        fields = ('bio', 'birth_date')
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+# 認証関連のビュー
+class SignUpView(CreateView):
+    """ユーザー登録ビュー"""
+    form_class = CustomUserCreationForm
+    template_name = 'polls/signup.html'
+    success_url = '/polls/survey_list/'
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # 登録後自動ログイン
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(self.request, user)
+            messages.success(self.request, 'アカウントが正常に作成されました！')
+        return response
+
+class LoginView(View):
+    """ログインビュー"""
+    template_name = 'polls/login.html'
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            return redirect('polls:survey_list')
+        form = AuthenticationForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                messages.success(request, f'ようこそ、{username}さん！')
+                return redirect('polls:survey_list')
+        return render(request, self.template_name, {'form': form})
+
+class LogoutView(View):
+    """ログアウトビュー"""
+    def get(self, request):
+        logout(request)
+        messages.info(request, 'ログアウトしました。')
+        return redirect('polls:login')
+
+class ProfileView(LoginRequiredMixin, UpdateView):
+    """プロフィール編集ビュー"""
+    model = UserProfile
+    form_class = UserProfileForm
+    template_name = 'polls/profile.html'
+    success_url = '/polls/profile/'
+
+    def get_object(self):
+        return self.request.user.profile
+
+    def form_valid(self, form):
+        messages.success(self.request, 'プロフィールが更新されました！')
+        return super().form_valid(form)
+
+class SurveyListView(ListView):
+    """アンケート一覧ビュー"""
+    model = Survey
+    template_name = 'polls/survey_list.html'
+    context_object_name = 'surveys'
+    ordering = ['-pub_date']
+
+    def get_queryset(self):
+        """ログイン状態に応じてアンケートを取得"""
+        if self.request.user.is_authenticated:
+            # ログインユーザーは自分のアンケートのみ表示
+            return Survey.objects.filter(created_by=self.request.user)
+        else:
+            # 未ログインユーザーはすべてのアンケートを表示
+            return Survey.objects.all()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        return context

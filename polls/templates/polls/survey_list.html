@@ -1,0 +1,217 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>アンケート一覧 - アンケートアプリ</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+        .header h1 {
+            margin: 0 0 15px 0;
+            color: #333;
+            word-break: keep-all;
+            line-height: 1.4;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .nav-links {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .nav-links span {
+            color: #333;
+            padding: 8px 16px;
+            border-radius: 5px;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+        }
+        .nav-links a {
+            color: #673ab7;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+        }
+        .nav-links a:hover {
+            background-color: #f8f9fa;
+        }
+        .nav-links .logout {
+            color: #dc3545;
+        }
+        .survey-list {
+            list-style: none;
+            padding: 0;
+        }
+        .survey-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .survey-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .survey-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .survey-description {
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .survey-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #888;
+        }
+        .survey-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background-color 0.3s;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 120px;
+            text-align: center;
+        }
+        .btn-primary {
+            background: #673ab7;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #512da8;
+        }
+        .btn-secondary {
+            background: #9c27b0;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7b1fa2;
+        }
+        .welcome-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+        }
+        .no-surveys {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{% if user.is_authenticated %}作成したアンケート一覧{% else %}アンケート一覧{% endif %}</h1>
+            <div class="nav-links">
+                {% if user.is_authenticated %}
+                    <span>ようこそ、{{ user.username }}さん！</span>
+                    <a href="{% url 'polls:profile' %}">プロフィール</a>
+                    <a href="{% url 'polls:logout' %}" class="logout">ログアウト</a>
+                {% else %}
+                    <a href="{% url 'polls:login' %}">ログイン</a>
+                    <a href="{% url 'polls:signup' %}">ユーザー登録</a>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if user.is_authenticated %}
+            <div style="background: #e8f5e8; color: #2e7d32; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #c8e6c9;">
+                <strong>ログイン中:</strong> あなたが作成したアンケートのみが表示されています。
+            </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="welcome-message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        {% if surveys %}
+            <ul class="survey-list">
+                {% for survey in surveys %}
+                    <li class="survey-item">
+                        <div class="survey-title">{{ survey.title }}</div>
+                        {% if survey.description %}
+                            <div class="survey-description">{{ survey.description }}</div>
+                        {% endif %}
+                        <div class="survey-meta">
+                            <span>公開日: {{ survey.pub_date|date:"Y年m月d日" }}</span>
+                            <span>質問数: {{ survey.questions.count }}</span>
+                        </div>
+                        <div class="survey-actions">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'polls:survey_results' survey.pk %}" class="btn btn-secondary">結果を見る</a>
+                            {% else %}
+                                <a href="{% url 'polls:survey_detail' survey.pk %}" class="btn btn-primary">アンケートに回答</a>
+                            {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="no-surveys">
+                {% if user.is_authenticated %}
+                    <h3>作成したアンケートがありません</h3>
+                    <p>新しいアンケートを作成してください。</p>
+                    <a href="{% url 'polls:survey_create' %}" class="btn btn-primary">アンケートを作成</a>
+                {% else %}
+                    <h3>アンケートがありません</h3>
+                    <p>現在、公開されているアンケートはありません。</p>
+                    <p>ログインしてアンケートを作成してください。</p>
+                    <a href="{% url 'polls:signup' %}" class="btn btn-primary">ユーザー登録</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if user.is_authenticated %}
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{% url 'polls:survey_create' %}" class="btn btn-primary" style="display: inline-block; width: auto; min-width: 200px; max-width: 300px;">新しいアンケートを作成</a>
+            </div>
+        {% else %}
+            <div style="text-align: center; margin-top: 30px;">
+                <p style="color: #666; margin-bottom: 15px;">アンケートを作成するにはログインが必要です</p>
+                <a href="{% url 'polls:login' %}" class="btn btn-primary" style="display: inline-block; width: auto; min-width: 200px; max-width: 300px;">ログインしてアンケート作成</a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html> 

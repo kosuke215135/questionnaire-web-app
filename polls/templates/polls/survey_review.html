@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>投票内容の振り返り - {{ survey.title }}</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+    <style>
+        .review-container {
+            max-width: 640px;
+            margin: 48px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(60, 80, 120, 0.10);
+            padding: 40px 36px 32px 36px;
+            border-top: 8px solid #673ab7;
+        }
+        .review-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .review-title {
+            color: #673ab7;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+        .review-subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .answer-review {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+        .answer-review:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .question-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #673ab7;
+        }
+        .answer-content {
+            background: #f3e8fd;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #673ab7;
+        }
+        .answer-text {
+            color: #333;
+            font-size: 1.1em;
+            line-height: 1.5;
+        }
+        .no-answer {
+            color: #666;
+            font-style: italic;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+        .navigation-buttons {
+            text-align: center;
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin: 0;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            font-size: 12px;
+        }
+        .btn-primary {
+            background: #673ab7;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #512da8;
+        }
+        .btn-secondary {
+            background: #9c27b0;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #7b1fa2;
+        }
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="review-container">
+        <div class="review-header">
+            <h1 class="review-title">投票内容の振り返り</h1>
+            <p class="review-subtitle">{{ survey.title }}</p>
+        </div>
+
+        <div class="success-message">
+            <strong>投票完了！</strong> ご協力ありがとうございました。
+        </div>
+
+        {% if user_answers %}
+            {% for answer in user_answers %}
+                <div class="answer-review">
+                    <div class="question-text">{{ answer.question.question_text }}</div>
+                    
+                    {% if answer.answers %}
+                        {% if answer.type == 'choice' %}
+                            <div class="answer-content">
+                                <strong>選択した回答:</strong>
+                                <ul style="margin: 10px 0; padding-left: 20px;">
+                                    {% for choice in answer.answers %}
+                                        <li class="answer-text">{{ choice }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% elif answer.type == 'text' %}
+                            <div class="answer-content">
+                                <strong>記述した回答:</strong>
+                                {% for text in answer.answers %}
+                                    <div class="answer-text" style="margin-top: 10px;">{{ text }}</div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="no-answer">
+                            この質問には回答していません。
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="answer-review">
+                <div class="no-answer">
+                    投票内容を取得できませんでした。
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="navigation-buttons">
+            <a href="{% url 'polls:survey_list' %}" class="btn btn-primary">アンケート一覧に戻る</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'polls:survey_results' survey.pk %}" class="btn btn-secondary">結果を見る</a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html> 
