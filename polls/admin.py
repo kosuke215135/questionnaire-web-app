@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Survey, Question, Choice, Answer, AnswerType, UserProfile
+from .models import Survey, Question, Choice, Answer, AnswerType, UserProfile, GraphType
 
 # Register your models here.
 
@@ -43,3 +43,8 @@ class AnswerAdmin(admin.ModelAdmin):
 class AnswerTypeAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
+
+@admin.register(GraphType)
+class GraphTypeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'display_name')
+    search_fields = ('name', 'display_name')

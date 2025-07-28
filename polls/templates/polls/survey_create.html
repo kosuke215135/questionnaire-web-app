@@ -9,10 +9,14 @@
     function toggleChoicesArea(selectElem) {
         const cell = selectElem.closest('.question-cell');
         const choicesArea = cell.querySelector('.choices-area');
+        const graphTypeSelection = cell.querySelector('.graph-type-selection');
+        
         if (selectElem.value === 'text') {
             choicesArea.style.display = 'none';
+            graphTypeSelection.style.display = 'none';  // 記述式の場合はグラフタイプ選択を非表示
         } else {
             choicesArea.style.display = '';
+            graphTypeSelection.style.display = '';  // 選択式の場合はグラフタイプ選択を表示
         }
     }
     // 選択肢追加
@@ -63,11 +67,14 @@
                 form.querySelectorAll('input[name="choices"]').forEach(el => el.remove());
                 // 質問文hidden inputをクリア
                 form.querySelectorAll('input[name="question_text"]').forEach(el => el.remove());
-                // 設問ごとに設問タイプ・選択肢・質問文をhidden inputで追加
+                // グラフタイプhidden inputをクリア
+                form.querySelectorAll('input[name="graph_type"]').forEach(el => el.remove());
+                // 設問ごとに設問タイプ・選択肢・質問文・グラフタイプをhidden inputで追加
                 const allChoices = [];
+                const allGraphTypes = [];
                 document.querySelectorAll('.question-cell').forEach(cell => {
                     // 設問タイプ
-                    const typeRadio = cell.querySelector('input[type="radio"][name^="question_type_":checked');
+                    const typeRadio = cell.querySelector('input[type="radio"][name^="question_type_"]:checked');
                     if (typeRadio) {
                         const hidden = document.createElement('input');
                         hidden.type = 'hidden';
@@ -84,6 +91,30 @@
                         hiddenQ.value = textarea.value;
                         form.appendChild(hiddenQ);
                     }
+                    // グラフタイプ（記述式以外の場合のみ）
+                    const questionType = typeRadio ? typeRadio.value : 'single';
+                    if (questionType !== 'text') {
+                        const graphTypeRadio = cell.querySelector('input[type="radio"][name^="graph_type_"]:checked');
+                        if (graphTypeRadio) {
+                            const hiddenGraph = document.createElement('input');
+                            hiddenGraph.type = 'hidden';
+                            hiddenGraph.name = 'graph_type';
+                            hiddenGraph.value = graphTypeRadio.value;
+                            form.appendChild(hiddenGraph);
+                            allGraphTypes.push(graphTypeRadio.value);
+                        } else {
+                            // デフォルトは棒グラフ
+                            const hiddenGraph = document.createElement('input');
+                            hiddenGraph.type = 'hidden';
+                            hiddenGraph.name = 'graph_type';
+                            hiddenGraph.value = 'bar';
+                            form.appendChild(hiddenGraph);
+                            allGraphTypes.push('bar');
+                        }
+                    } else {
+                        // 記述式の場合はグラフタイプを追加しない
+                        allGraphTypes.push(null);
+                    }
                     // 選択肢
                     let unique_id = cell.getAttribute('data-unique-id');
                     const choices = [];
@@ -98,6 +129,12 @@
                 choicesHidden.name = 'choices';
                 choicesHidden.value = JSON.stringify(allChoices);
                 form.appendChild(choicesHidden);
+                // 全設問分のグラフタイプをJSONでhidden inputに
+                const graphTypesHidden = document.createElement('input');
+                graphTypesHidden.type = 'hidden';
+                graphTypesHidden.name = 'graph_types';
+                graphTypesHidden.value = JSON.stringify(allGraphTypes);
+                form.appendChild(graphTypesHidden);
             });
         }
     });

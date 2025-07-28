@@ -5,7 +5,7 @@ from django.views.generic.detail import SingleObjectMixin
 from django.views.generic import DetailView as GenericDetailView, ListView
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from .models import Question, Choice, Survey, Answer, AnswerType, UserProfile
+from .models import Question, Choice, Survey, Answer, AnswerType, UserProfile, GraphType
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from polls.utils.graph import plot_graph_with_path
@@ -78,8 +78,14 @@ class SurveyResultsView(LoginRequiredMixin, DetailView):
             # ファイル名例: survey1_q2.png
             filename = f'survey{survey.id}_q{question.id}.png'
             path = os.path.join(graph_dir, filename)
+            
+            # グラフタイプに応じてグラフを生成
+            graph_type = 'bar'  # デフォルトは棒グラフ
+            if question.graph_type:
+                graph_type = question.graph_type.name
+            
             # グラフ画像生成
-            plot_graph_with_path(colum, num, path)
+            plot_graph_with_path(colum, num, path, graph_type)
             # Webから参照するパス
             web_path = f'static/polls/graph/{filename}'
             results.append({
@@ -244,6 +250,8 @@ def survey_create(request):
             created_by=request.user if request.user.is_authenticated else None
         )
         question_texts = request.POST.getlist('question_text')
+        graph_types = request.POST.getlist('graph_type')
+        
         # ユニークIDを抽出
         question_ids = []
         for key in request.POST.keys():
@@ -261,14 +269,28 @@ def survey_create(request):
             'multiple': 'multiple_choice',
             'text': 'text'
         }
+        
         for i, (q_text, q_type) in enumerate(zip(question_texts, question_types)):
             answer_type_name = type_map.get(q_type, 'single_choice')
             answer_type = AnswerType.objects.get(name=answer_type_name)
             is_required = str(i) in is_requireds or True  # 必須チェック（暫定）
+            
+            # グラフタイプを取得（記述式以外の場合のみ）
+            graph_type = None
+            if q_type != 'text' and i < len(graph_types):
+                graph_type_name = graph_types[i]
+                if graph_type_name:  # nullでない場合のみ
+                    try:
+                        graph_type = GraphType.objects.get(name=graph_type_name)
+                    except GraphType.DoesNotExist:
+                        # デフォルトは棒グラフ
+                        graph_type = GraphType.objects.get(name='bar')
+            
             question = Question.objects.create(
                 survey=survey,
                 question_text=q_text,
                 answer_type=answer_type,
+                graph_type=graph_type,
                 is_required=is_required,
                 pub_date=timezone.now()
             )

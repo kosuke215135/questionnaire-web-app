@@ -8,6 +8,11 @@
             <input type="checkbox" name="is_required" style="margin-right:4px;"> 必須
         </label>
     </div>
+    <div class="graph-type-selection" style="display: flex; align-items: center; gap: 18px; margin-bottom: 8px;">
+        <span class="question-label">グラフタイプ：</span>
+        <label style="margin-right: 8px;"><input type="radio" name="graph_type_{{ unique_id }}" value="bar" checked> 棒グラフ</label>
+        <label style="margin-right: 8px;"><input type="radio" name="graph_type_{{ unique_id }}" value="pie"> 円グラフ</label>
+    </div>
     <textarea class="googleform-textarea" name="question_text" required placeholder="質問内容を入力"></textarea>
     <div class="choices-area">
         <ul class="choices-list">
