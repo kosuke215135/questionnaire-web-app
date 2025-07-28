@@ -6,6 +6,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
 from polls.models import Survey, Question, Choice, AnswerType
+from django.contrib.auth.models import User
 
 # 回答タイプを作成（既存があれば取得）
 single_choice, _ = AnswerType.objects.get_or_create(name='single_choice')
@@ -17,11 +18,24 @@ AnswerType.objects.get_or_create(name='single')
 AnswerType.objects.get_or_create(name='multiple')
 AnswerType.objects.get_or_create(name='text')
 
+# サンプルユーザーを作成（既存があれば取得）
+sample_user, created = User.objects.get_or_create(
+    username='hajime',
+    defaults={
+        'email': 'sample@example.com'
+    }
+)
+if created:
+    sample_user.set_password('k258472')
+    sample_user.save()
+    print(f"サンプルユーザー '{sample_user.username}' を作成しました。")
+
 # サーベイ（アンケート）を作成
 survey = Survey.objects.create(
     title="AIの透明性・説明可能性・軽量化に関するアンケート",
     description="AI技術の社会的な受容や課題について、みなさまのご意見をお聞かせください。",
-    pub_date=timezone.now()
+    pub_date=timezone.now(),
+    created_by=sample_user
 )
 
 # 1つ目の質問（単一選択・必須）
@@ -139,4 +153,5 @@ q8 = Question.objects.create(
 )
 
 
-print("AIの透明性・説明可能性・軽量化に関するサンプルデータの投入が完了しました。") 
+print("AIの透明性・説明可能性・軽量化に関するサンプルデータの投入が完了しました。")
+print(f"アンケートは '{sample_user.username}' ユーザーと紐つけられました。") 

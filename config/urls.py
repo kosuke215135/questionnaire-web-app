@@ -16,8 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
+
+def redirect_to_surveys(request):
+    return redirect('polls:survey_list')
 
 urlpatterns = [
+    path('', redirect_to_surveys, name='home'),
     path('polls/', include(('polls.urls', 'polls'), namespace='polls')),
     path('admin/', admin.site.urls),
 ]

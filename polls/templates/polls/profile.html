@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>プロフィール編集 - アンケートアプリ</title>
+    <link rel="stylesheet" href="{% static 'polls/style.css' %}">
+    <style>
+        .auth-container {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .auth-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+        .auth-button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .auth-button:hover {
+            background: #0056b3;
+        }
+        .auth-links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .auth-links a {
+            color: #007bff;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+        .error-message {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .success-message {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .user-info p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .user-info strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1 class="auth-title">プロフィール編集</h1>
+        
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="error-message">{{ message }}</div>
+                {% else %}
+                    <div class="success-message">{{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        
+        <div class="user-info">
+            <p><strong>ユーザー名:</strong> {{ user.username }}</p>
+            <p><strong>メールアドレス:</strong> {{ user.email }}</p>
+            <p><strong>登録日:</strong> {{ user.date_joined|date:"Y年m月d日" }}</p>
+        </div>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+                <div class="error-message">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <p>{{ field.label }}: {{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="{{ form.bio.id_for_label }}">自己紹介</label>
+                {{ form.bio }}
+                {% if form.bio.help_text %}
+                    <div class="help-text">{{ form.bio.help_text }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ form.birth_date.id_for_label }}">生年月日</label>
+                {{ form.birth_date }}
+                {% if form.birth_date.help_text %}
+                    <div class="help-text">{{ form.birth_date.help_text }}</div>
+                {% endif %}
+            </div>
+            
+            <button type="submit" class="auth-button">プロフィールを更新</button>
+        </form>
+        
+        <div class="auth-links">
+            <a href="{% url 'polls:survey_list' %}">アンケート一覧に戻る</a>
+            <a href="{% url 'polls:logout' %}">ログアウト</a>
+        </div>
+    </div>
+</body>
+</html> 
