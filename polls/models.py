@@ -12,6 +12,14 @@ class AnswerType(models.Model):
     def __str__(self):
         return self.name
 
+# グラフタイプ（棒グラフ・円グラフなど）
+class GraphType(models.Model):
+    name = models.CharField(max_length=50, unique=True)  # 例: 'bar', 'pie'
+    display_name = models.CharField(max_length=100)  # 例: '棒グラフ', '円グラフ'
+
+    def __str__(self):
+        return self.display_name
+
 class Survey(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -26,6 +34,7 @@ class Question(models.Model):
     question_text = models.CharField(max_length=200)
     pub_date = models.DateTimeField('公開日')
     answer_type = models.ForeignKey(AnswerType, on_delete=models.PROTECT)
+    graph_type = models.ForeignKey(GraphType, on_delete=models.PROTECT, verbose_name='グラフタイプ', null=True, blank=True)
     is_required = models.BooleanField(default=False)
 
     def __str__(self):

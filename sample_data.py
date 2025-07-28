@@ -5,7 +5,7 @@ from django.utils import timezone
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 django.setup()
 
-from polls.models import Survey, Question, Choice, AnswerType
+from polls.models import Survey, Question, Choice, AnswerType, GraphType
 from django.contrib.auth.models import User
 
 # 回答タイプを作成（既存があれば取得）
@@ -17,6 +17,10 @@ text_type, _ = AnswerType.objects.get_or_create(name='text')
 AnswerType.objects.get_or_create(name='single')
 AnswerType.objects.get_or_create(name='multiple')
 AnswerType.objects.get_or_create(name='text')
+
+# GraphTypeの初期データ投入
+GraphType.objects.get_or_create(name='bar', defaults={'display_name': '棒グラフ'})
+GraphType.objects.get_or_create(name='pie', defaults={'display_name': '円グラフ'})
 
 # サンプルユーザーを作成（既存があれば取得）
 sample_user, created = User.objects.get_or_create(
@@ -38,12 +42,17 @@ survey = Survey.objects.create(
     created_by=sample_user
 )
 
+# グラフタイプを取得
+bar_graph = GraphType.objects.get(name='bar')
+pie_graph = GraphType.objects.get(name='pie')
+
 # 1つ目の質問（単一選択・必須）
 q1 = Question.objects.create(
     survey=survey,
     question_text="AIの透明性向上にどの程度関心がありますか？",
     pub_date=timezone.now(),
     answer_type=single_choice,
+    graph_type=bar_graph,
     is_required=True
 )
 for text in [
@@ -61,6 +70,7 @@ q2 = Question.objects.create(
     question_text="AIがブラックボックスのままであることに不安を感じますか？",
     pub_date=timezone.now(),
     answer_type=single_choice,
+    graph_type=pie_graph,
     is_required=True
 )
 for text in [
