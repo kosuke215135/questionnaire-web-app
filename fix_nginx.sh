@@ -19,6 +19,7 @@ sudo sed -i "s/your-ec2-public-ip/$PUBLIC_IP/g" /etc/nginx/sites-available/quest
 
 # プロジェクトパスを設定ファイルに反映
 PROJECT_DIR=$(pwd)
+echo "プロジェクトパス: $PROJECT_DIR"
 echo "プロジェクトパスを設定ファイルに反映中..."
 sudo sed -i "s|/home/ubuntu/questionnaire-web-app|$PROJECT_DIR|g" /etc/nginx/sites-available/questionnaire
 
