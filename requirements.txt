@@ -1,0 +1,23 @@
+# Django
+Django==5.2.3
+
+# Database
+mysqlclient==2.2.0
+
+# Web Server
+gunicorn==21.2.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# Security
+cryptography==41.0.7
+
+# Graph Visualization
+matplotlib==3.8.2
+japanize-matplotlib==1.1.1
+numpy==1.24.3
+
+# Development Tools (開発環境のみ)
+pytest==7.4.3
+pytest-django==4.7.0 
