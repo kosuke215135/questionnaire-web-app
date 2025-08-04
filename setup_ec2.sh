@@ -13,6 +13,10 @@ sudo apt update && sudo apt upgrade -y
 echo "必要なパッケージをインストール中..."
 sudo apt install -y python3 python3-pip python3-venv nginx mysql-server mysql-client git curl
 
+# MySQL開発ライブラリのインストール（mysqlclient用）
+echo "MySQL開発ライブラリをインストール中..."
+sudo apt install -y python3-dev default-libmysqlclient-dev build-essential pkg-config
+
 # Python仮想環境の作成
 echo "Python仮想環境を作成中..."
 python3 -m venv venv
