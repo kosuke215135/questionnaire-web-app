@@ -75,3 +75,5 @@ LOGGING = {
         'level': 'INFO',
     },
 } 
+
+ROOT_URLCONF = 'config.urls'
