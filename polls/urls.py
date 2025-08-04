@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 from .views import SurveyDetailView, SurveyResultsView, survey_vote
 
-__all__ = ['DetailView', 'ResultsView', 'vote']
 
 urlpatterns = [
     # 認証関連のURL
